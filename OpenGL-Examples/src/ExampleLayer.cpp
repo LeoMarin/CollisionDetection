@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h> 
 #include <vector>
-
+#include <cmath>
 
 using namespace GLCore;
 using namespace GLCore::Utils;
@@ -73,8 +73,6 @@ void ExampleLayer::OnUpdate(Timestep ts)
 	std::vector<Vertex> vertices;
 	GenerateVerices(vertices);
 
-	MovePoints();
-
 	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), &vertices[0]);
 
@@ -93,6 +91,9 @@ void ExampleLayer::OnUpdate(Timestep ts)
 
 	glBindVertexArray(m_QuadVA);
 	glDrawElements(GL_TRIANGLES, m_NumberOfPoints * 6, GL_UNSIGNED_INT, nullptr);
+
+	MovePoints();
+	BruteForceCollisionDetection();
 }
 
 void ExampleLayer::OnImGuiRender()
@@ -163,4 +164,42 @@ void ExampleLayer::MovePoints()
 		if (m_Points[i].Position[1] > m_BoundaryY || m_Points[i].Position[1] < -m_BoundaryY)
 			m_Points[i].Direction[1] = -m_Points[i].Direction[1];
 	}
+}
+
+void ExampleLayer::BruteForceCollisionDetection()
+{
+	for (int i = 0; i < m_NumberOfPoints - 1; i++)
+	{
+		for (int j = i+1; j < m_NumberOfPoints; j++)
+		{
+			float x, y;
+			x = abs(m_Points[i].Position[0] - m_Points[j].Position[0]);
+			y = abs(m_Points[i].Position[1] - m_Points[j].Position[1]);
+
+			if (x < m_PointSize * 2 && y < m_PointSize * 2)
+			{
+				if (x < y)
+				{
+					m_Points[i].Direction[0] = -m_Points[i].Direction[0];
+					m_Points[j].Direction[0] = -m_Points[j].Direction[0];
+				}
+				else
+				{
+					m_Points[i].Direction[1] = -m_Points[i].Direction[1];
+					m_Points[j].Direction[1] = -m_Points[j].Direction[1];
+				}
+			}
+
+		}
+	}
+}
+
+void ExampleLayer::QuadTreeCollisionDetection()
+{
+
+}
+
+void ExampleLayer::SpatialHashingCollisionDetection()
+{
+
 }
