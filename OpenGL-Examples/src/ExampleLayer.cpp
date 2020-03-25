@@ -98,18 +98,20 @@ void ExampleLayer::OnUpdate(Timestep ts)
 void ExampleLayer::OnImGuiRender()
 {
 	ImGui::Begin("Controls");
-	/*if (ImGui::ColorEdit4("Square Base Color", glm::value_ptr(m_SquareBaseColor)))
-		m_SquareColor = m_SquareBaseColor;
-	ImGui::ColorEdit4("Square Alternate Color", glm::value_ptr(m_SquareAlternateColor));*/
+	// TODO remove hardcoded
+	ImGui::SliderFloat("Point size", &m_PointSize, .001f, .02f);
+	ImGui::SliderFloat("Speed", &m_Speed, 0.0001f, m_PointSize);
+	ImGui::SliderInt("Number of points", &m_NumberOfPoints, 10, m_MaxPoints);
 	ImGui::End();
 }
 
 
 void ExampleLayer::GeneratePoints()
 {
-	m_Points.reserve(m_NumberOfPoints);
+	// TODO fix constant number of points
+	m_Points.reserve(m_MaxPoints);
 
-	for (int i = 0; i < m_NumberOfPoints; i++)
+	for (int i = 0; i < m_MaxPoints; i++)
 	{
 		m_Points.emplace_back(
 		((double)rand() / (RAND_MAX)) * 3 - 1.5,

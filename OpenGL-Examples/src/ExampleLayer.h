@@ -54,12 +54,13 @@ private:
 
 	glm::vec4 m_SquareColor = { 1.f, 1.f, 1.f, 1.0f };
 
-	const float m_PointSize = 0.005f;
 	const float m_BoundaryX = 1.5f;
 	const float m_BoundaryY = 1.f;
 	float m_Speed = 0.005f;
+	float m_PointSize = 0.005f;
 
 	int m_NumberOfPoints = 5000;
+	int m_CurrentNumberOfPoints;
 	const int m_MaxPoints = 10000;
 
 	std::vector<Point> m_Points;
