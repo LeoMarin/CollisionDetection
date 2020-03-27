@@ -21,6 +21,7 @@ struct Point
 struct Vertex
 {
 	float Position[3];
+
 	Vertex(float x, float y, float z)
 	{
 		Position[0] = x;
@@ -42,6 +43,12 @@ public:
 	virtual void OnEvent(GLCore::Event& event) override;
 	virtual void OnUpdate(GLCore::Timestep ts) override;
 	virtual void OnImGuiRender() override;
+
+	void PointRenderingSetup();
+	void QuadTreeRenderingSetup();
+	void DrawPoints();
+	void DrawQuadTree();
+
 	void MovePoints();
 	void GeneratePoints();
 	void GenerateVerices(std::vector<Vertex>& vertices);
@@ -55,7 +62,7 @@ private:
 	GLCore::Utils::Shader* m_Shader;
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 	
-	GLuint m_QuadVA, m_QuadVB, m_QuadIB;
+	GLuint m_QuadVA, m_QuadVB, m_QuadIB, m_TreeVA, m_TreeVB, m_TreeIB;
 
 	glm::vec4 m_SquareColor = { 1.f, 1.f, 1.f, 1.0f };
 

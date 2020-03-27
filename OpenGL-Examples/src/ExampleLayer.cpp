@@ -34,23 +34,9 @@ void ExampleLayer::OnAttach()
 		"assets/shaders/test.vert.glsl",
 		"assets/shaders/test.frag.glsl"
 	);
-
-	glCreateVertexArrays(1, &m_QuadVA);
-	glBindVertexArray(m_QuadVA);
-
-	glCreateBuffers(1, &m_QuadVB);
-	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_MaxPoints * 4, nullptr, GL_DYNAMIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
 	
-	std::vector<uint32_t> indices;
-	GenerateIndices(indices);
-
-	glCreateBuffers(1, &m_QuadIB);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), &indices[0], GL_STATIC_DRAW);
+	PointRenderingSetup();
+	QuadTreeRenderingSetup(); // TODO fix number of indices
 }
 
 void ExampleLayer::OnDetach()
@@ -58,6 +44,11 @@ void ExampleLayer::OnDetach()
 	glDeleteVertexArrays(1, &m_QuadVA);
 	glDeleteBuffers(1, &m_QuadVB);
 	glDeleteBuffers(1, &m_QuadIB);
+
+
+	glDeleteVertexArrays(1, &m_TreeVA);
+	glDeleteBuffers(1, &m_TreeVB);
+	glDeleteBuffers(1, &m_TreeIB);
 }
 
 void ExampleLayer::OnEvent(Event& event)
@@ -69,15 +60,7 @@ void ExampleLayer::OnUpdate(Timestep ts)
 {
 	m_CameraController.OnUpdate(ts);
 
-	// Set dynamic vertex buffer	
-	std::vector<Vertex> vertices;
-	GenerateVerices(vertices);
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), &vertices[0]);
-
 	glClear(GL_COLOR_BUFFER_BIT);
-
 
 	glClearColor(1.f, 1.f, 1.f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -89,11 +72,10 @@ void ExampleLayer::OnUpdate(Timestep ts)
 
 	location = glGetUniformLocation(m_Shader->GetRendererID(), "u_Color");
 
-	glBindVertexArray(m_QuadVA);
-	glDrawElements(GL_TRIANGLES, m_NumberOfPoints * 6, GL_UNSIGNED_INT, nullptr);
+	DrawPoints();
+	DrawQuadTree();
 
 	MovePoints();
-	BruteForceCollisionDetection();
 }
 
 void ExampleLayer::OnImGuiRender()
@@ -149,6 +131,74 @@ void ExampleLayer::GenerateIndices(std::vector<uint32_t>& indices)
 	}
 }
 
+void ExampleLayer::PointRenderingSetup()
+{
+	glCreateVertexArrays(1, &m_QuadVA);
+	glBindVertexArray(m_QuadVA);
+
+	glCreateBuffers(1, &m_QuadVB);
+	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_MaxPoints * 4, nullptr, GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
+
+	std::vector<uint32_t> indices;
+	GenerateIndices(indices);
+
+	glCreateBuffers(1, &m_QuadIB);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), &indices[0], GL_STATIC_DRAW);
+}
+
+void ExampleLayer::QuadTreeRenderingSetup()
+{
+	glCreateVertexArrays(1, &m_TreeVA);
+	glBindVertexArray(m_TreeVA);
+
+	glCreateBuffers(1, &m_TreeVB);
+	glBindBuffer(GL_ARRAY_BUFFER, m_TreeVB);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 4, nullptr, GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
+
+	std::vector<uint32_t> treeIndices;
+	GenerateIndices(treeIndices);
+
+	glCreateBuffers(1, &m_TreeIB);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_TreeIB);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, treeIndices.size() * sizeof(float), &treeIndices[0], GL_STATIC_DRAW);
+}
+
+void ExampleLayer::DrawPoints()
+{
+	std::vector<Vertex> vertices;
+	GenerateVerices(vertices);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), &vertices[0]);
+
+	glBindVertexArray(m_QuadVA);
+	glDrawElements(GL_TRIANGLES, m_NumberOfPoints * 6, GL_UNSIGNED_INT, nullptr);
+}
+
+void ExampleLayer::DrawQuadTree()
+{
+	std::vector<Vertex> treeVertices;
+
+	treeVertices.emplace_back(-1.5f, 1.0f, 0.0f);
+	treeVertices.emplace_back(-1.5f, -1.0f, 0.0f);
+	treeVertices.emplace_back(1.5f, -1.0f, 0.0f);
+	treeVertices.emplace_back(1.5f, 1.0f, 0.0f);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_TreeVB);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, treeVertices.size() * sizeof(Vertex), &treeVertices[0]);
+
+	glBindVertexArray(m_TreeVA);
+	glLineWidth(2.f);
+	glDrawElements(GL_LINE_STRIP, 6, GL_UNSIGNED_INT, nullptr);
+}
 
 void ExampleLayer::MovePoints()
 {
@@ -178,7 +228,7 @@ void ExampleLayer::BruteForceCollisionDetection()
 
 			if (x < m_PointSize * 2 && y < m_PointSize * 2)
 			{
-				if (x < y)
+				if (x > y)
 				{
 					m_Points[i].Direction[0] = -m_Points[i].Direction[0];
 					m_Points[j].Direction[0] = -m_Points[j].Direction[0];
