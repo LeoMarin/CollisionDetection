@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Point.h"
+#include "QuadTree.h"
 
 #include <GLCore.h>
 #include <GLCoreUtils.h>
@@ -22,6 +23,7 @@ public:
 	void QuadTreeRenderingSetup();
 	void DrawPoints();
 	void DrawQuadTree();
+	void GenerateQuadTree();
 
 	void MovePoints();
 	void GeneratePoints();
@@ -45,10 +47,11 @@ private:
 	float m_Speed = 0.005f;
 	float m_PointSize = 0.005f;
 
-	int m_NumberOfPoints = 50;
+	int m_NumberOfPoints = 10000;
 	int m_CurrentNumberOfPoints;
 	const int m_MaxPoints = 10000;
 
+	QuadTree quadTree{};
 	std::vector<Point> m_Points;
 
 };

@@ -36,6 +36,8 @@ void ExampleLayer::OnAttach()
 	);
 	
 	PointRenderingSetup();
+	GenerateQuadTree();
+
 	QuadTreeRenderingSetup(); // TODO fix number of indices
 }
 
@@ -60,10 +62,6 @@ void ExampleLayer::OnUpdate(Timestep ts)
 {
 	m_CameraController.OnUpdate(ts);
 
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	glClearColor(1.f, 1.f, 1.f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(m_Shader->GetRendererID());
 
@@ -72,10 +70,20 @@ void ExampleLayer::OnUpdate(Timestep ts)
 
 	location = glGetUniformLocation(m_Shader->GetRendererID(), "u_Color");
 
+
+	// QuadTree generation
+	MovePoints();
+	quadTree.Redristribute();
+	quadTree.DeleteChildNodes();
+
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glClearColor(1.f, 1.f, 1.f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
 	DrawPoints();
 	DrawQuadTree();
-
-	MovePoints();
 }
 
 void ExampleLayer::OnImGuiRender()
@@ -158,13 +166,19 @@ void ExampleLayer::QuadTreeRenderingSetup()
 
 	glCreateBuffers(1, &m_TreeVB);
 	glBindBuffer(GL_ARRAY_BUFFER, m_TreeVB);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 4, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_MaxPoints, nullptr, GL_DYNAMIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
 
 	std::vector<uint32_t> treeIndices;
-	GenerateIndices(treeIndices);
+	//GenerateIndices(treeIndices);
+
+	treeIndices.reserve(m_MaxPoints * 4);
+	for(int i = 0; i < m_MaxPoints; i++)
+	{
+		treeIndices.emplace_back(i);
+	}
 
 	glCreateBuffers(1, &m_TreeIB);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_TreeIB);
@@ -187,17 +201,36 @@ void ExampleLayer::DrawQuadTree()
 {
 	std::vector<Vertex> treeVertices;
 
-	treeVertices.emplace_back(-1.5f, 1.0f, 0.0f);
-	treeVertices.emplace_back(-1.5f, -1.0f, 0.0f);
-	treeVertices.emplace_back(1.5f, -1.0f, 0.0f);
-	treeVertices.emplace_back(1.5f, 1.0f, 0.0f);
 
+	treeVertices.emplace_back(-1.5f, 1.f, 0.f);
+	treeVertices.emplace_back(-1.5f, -1.f, 0.f);
+	treeVertices.emplace_back(-1.5f, .999f, 0.f);
+	treeVertices.emplace_back(1.5f, .999f, 0.f);
+	treeVertices.emplace_back(-1.5f, -1.f, 0.f);
+	treeVertices.emplace_back(1.5f, -1.f, 0.f);
+	treeVertices.emplace_back( 1.5f, -1.f, 0.f);
+	treeVertices.emplace_back( 1.5f,  1.f, 0.f);
+
+	quadTree.CreateQuadTreeVertices(treeVertices);
+	
+	int numberOfVertices = treeVertices.size();
 	glBindBuffer(GL_ARRAY_BUFFER, m_TreeVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, treeVertices.size() * sizeof(Vertex), &treeVertices[0]);
 
 	glBindVertexArray(m_TreeVA);
-	glLineWidth(2.f);
-	glDrawElements(GL_LINE_STRIP, 6, GL_UNSIGNED_INT, nullptr);
+	glLineWidth(1.f);
+
+	glDrawElements(GL_LINES, numberOfVertices, GL_UNSIGNED_INT, nullptr);
+
+}
+
+
+void ExampleLayer::GenerateQuadTree()
+{
+	for(int i = 0; i < m_NumberOfPoints; i++)
+	{
+		quadTree.AddPoint(m_Points[i]);
+	}
 }
 
 void ExampleLayer::MovePoints()
@@ -208,11 +241,28 @@ void ExampleLayer::MovePoints()
 		m_Points[i].Position[1] += m_Points[i].Direction[1] * m_Speed;
 
 		// Detect boundary collision
-		if (m_Points[i].Position[0] > m_BoundaryX || m_Points[i].Position[0] < -m_BoundaryX)
+		if(m_Points[i].Position[0] > m_BoundaryX)
+		{
 			m_Points[i].Direction[0] = -m_Points[i].Direction[0];
+			m_Points[i].Position[0] = m_BoundaryX;
+		}
+		else if(m_Points[i].Position[0] < -m_BoundaryX)
+		{
+			m_Points[i].Direction[0] = -m_Points[i].Direction[0];
+			m_Points[i].Position[0] = -m_BoundaryX;
+		}
 
-		if (m_Points[i].Position[1] > m_BoundaryY || m_Points[i].Position[1] < -m_BoundaryY)
+		if(m_Points[i].Position[1] > m_BoundaryY)
+		{
 			m_Points[i].Direction[1] = -m_Points[i].Direction[1];
+			m_Points[i].Position[1] = m_BoundaryY;
+		}
+		else if(m_Points[i].Position[1] < -m_BoundaryY)
+		{
+			m_Points[i].Direction[1] = -m_Points[i].Direction[1];
+			m_Points[i].Position[1] = -m_BoundaryY;
+
+		}
 	}
 }
 

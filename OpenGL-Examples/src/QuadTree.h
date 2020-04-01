@@ -9,12 +9,19 @@ public:
 	QuadTree(); // creating parent node
 	QuadTree(QuadTree& parent, int childNumber); // creating child node
 
+	~QuadTree();
+
 	void CreateChildNodes();
 	void AddPoint(Point& point);
 	bool PointIsInsideQuad(const Point& point);
+	void CreateQuadTreeVertices(std::vector<Vertex>& vertices);
+
+	void Redristribute();
+	void DeleteChildNodes();
+
+	static const int maxPoints = 4;
 
 private:
-	bool isLeaf;
 	QuadTree* parentNode;
 	QuadTree* childNodes[4] = { nullptr }; // order: up-right, up-left, down-left, down-right
 	std::vector<Point*> points;
