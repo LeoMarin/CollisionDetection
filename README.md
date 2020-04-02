@@ -4,7 +4,7 @@ Work-in-progress OpenGL library that aims to provide a powerful sandbox for you 
 ## Usage
 
 ```
-git clone --recursive https://github.com/LeoMarin/OpenGL
+git clone --recursive https://github.com/LeoMarin/CollisionDetection
 ```
 
-Run `scripts/Win-Premake.bat` and open `OpenGL-Example.sln` in Visual Studio 2019.
+Run `scripts/Win-Premake.bat` and open `CollisionDetection.sln` in Visual Studio 2019.
