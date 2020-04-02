@@ -6,12 +6,12 @@
 #include <GLCore.h>
 #include <GLCoreUtils.h>
 
-class ExampleLayer : public GLCore::Layer
+class CollisionDetection : public GLCore::Layer
 {
 public:
 
-	ExampleLayer();
-	virtual ~ExampleLayer();
+	CollisionDetection();
+	virtual ~CollisionDetection();
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
@@ -50,7 +50,7 @@ private:
 	int m_PreviousNumberOfPoints = m_NumberOfPoints;
 	const int m_MaxPoints = 10000;
 
-	int collisionSystem = 0;
+	int collisionSystem = 1;
 
 	QuadTree quadTree{};
 	std::vector<Point> m_Points;

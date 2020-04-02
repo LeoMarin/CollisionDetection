@@ -1,4 +1,4 @@
-#include "ExampleLayer.h"
+#include "CollisionDetection.h"
 
 #include <stdlib.h>
 #include <time.h> 
@@ -8,18 +8,18 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
-ExampleLayer::ExampleLayer()
+CollisionDetection::CollisionDetection()
 	: m_CameraController(16.0f / 9.0f)
 {
 
 }
 
-ExampleLayer::~ExampleLayer()
+CollisionDetection::~CollisionDetection()
 {
 
 }
 
-void ExampleLayer::OnAttach()
+void CollisionDetection::OnAttach()
 {
 	EnableGLDebugging();
 	srand(time(NULL));
@@ -41,7 +41,7 @@ void ExampleLayer::OnAttach()
 	quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
 }
 
-void ExampleLayer::OnDetach()
+void CollisionDetection::OnDetach()
 {
 	glDeleteVertexArrays(1, &m_QuadVA);
 	glDeleteBuffers(1, &m_QuadVB);
@@ -53,12 +53,12 @@ void ExampleLayer::OnDetach()
 	glDeleteBuffers(1, &m_TreeIB);
 }
 
-void ExampleLayer::OnEvent(Event& event)
+void CollisionDetection::OnEvent(Event& event)
 {
 
 }
 
-void ExampleLayer::OnUpdate(Timestep ts)
+void CollisionDetection::OnUpdate(Timestep ts)
 {
 	m_CameraController.OnUpdate(ts);
 
@@ -92,7 +92,7 @@ void ExampleLayer::OnUpdate(Timestep ts)
 
 }
 
-void ExampleLayer::OnImGuiRender()
+void CollisionDetection::OnImGuiRender()
 {
 	ImGui::Begin("Controls");
 	// TODO remove hardcoded
@@ -104,7 +104,7 @@ void ExampleLayer::OnImGuiRender()
 }
 
 
-void ExampleLayer::GeneratePoints()
+void CollisionDetection::GeneratePoints()
 {
 	// TODO fix constant number of points
 	m_Points.reserve(m_MaxPoints);
@@ -119,7 +119,7 @@ void ExampleLayer::GeneratePoints()
 	}
 }
 
-void ExampleLayer::GenerateVerices(std::vector<Vertex>& vertices)
+void CollisionDetection::GenerateVerices(std::vector<Vertex>& vertices)
 {
 	vertices.reserve(m_NumberOfPoints * 4);
 
@@ -132,7 +132,7 @@ void ExampleLayer::GenerateVerices(std::vector<Vertex>& vertices)
 	}
 }
 
-void ExampleLayer::GenerateIndices(std::vector<uint32_t>& indices)
+void CollisionDetection::GenerateIndices(std::vector<uint32_t>& indices)
 {
 	indices.reserve(m_MaxPoints * 6);
 	for (int i = 0; i < m_MaxPoints; i++)
@@ -146,7 +146,7 @@ void ExampleLayer::GenerateIndices(std::vector<uint32_t>& indices)
 	}
 }
 
-void ExampleLayer::PointRenderingSetup()
+void CollisionDetection::PointRenderingSetup()
 {
 	glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
@@ -166,7 +166,7 @@ void ExampleLayer::PointRenderingSetup()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), &indices[0], GL_STATIC_DRAW);
 }
 
-void ExampleLayer::QuadTreeRenderingSetup()
+void CollisionDetection::QuadTreeRenderingSetup()
 {
 	glCreateVertexArrays(1, &m_TreeVA);
 	glBindVertexArray(m_TreeVA);
@@ -192,7 +192,7 @@ void ExampleLayer::QuadTreeRenderingSetup()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, treeIndices.size() * sizeof(float), &treeIndices[0], GL_STATIC_DRAW);
 }
 
-void ExampleLayer::DrawPoints()
+void CollisionDetection::DrawPoints()
 {
 	std::vector<Vertex> vertices;
 	GenerateVerices(vertices);
@@ -204,7 +204,7 @@ void ExampleLayer::DrawPoints()
 	glDrawElements(GL_TRIANGLES, m_NumberOfPoints * 6, GL_UNSIGNED_INT, nullptr);
 }
 
-void ExampleLayer::DrawQuadTree()
+void CollisionDetection::DrawQuadTree()
 {
 	std::vector<Vertex> treeVertices;
 
@@ -231,7 +231,7 @@ void ExampleLayer::DrawQuadTree()
 
 }
 
-void ExampleLayer::MovePoints()
+void CollisionDetection::MovePoints()
 {
 	for (int i = 0; i < m_NumberOfPoints; i++)
 	{
@@ -264,7 +264,7 @@ void ExampleLayer::MovePoints()
 	}
 }
 
-void ExampleLayer::BruteForceCollisionDetection()
+void CollisionDetection::BruteForceCollisionDetection()
 {
 	for (int i = 0; i < m_NumberOfPoints - 1; i++)
 	{
@@ -292,7 +292,7 @@ void ExampleLayer::BruteForceCollisionDetection()
 	}
 }
 
-void ExampleLayer::QuadTreeCollisionDetection()
+void CollisionDetection::QuadTreeCollisionDetection()
 {
 	if(m_PreviousNumberOfPoints != m_NumberOfPoints)
 	{
@@ -310,7 +310,7 @@ void ExampleLayer::QuadTreeCollisionDetection()
 	DrawQuadTree();
 }
 
-void ExampleLayer::SpatialHashingCollisionDetection()
+void CollisionDetection::SpatialHashingCollisionDetection()
 {
 
 }

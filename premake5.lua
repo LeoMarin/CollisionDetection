@@ -1,8 +1,8 @@
--- OpenGL-Examples
-workspace "OpenGL-Examples"
-    startproject "OpenGL-Examples"
+-- CollisionDetection
+workspace "CollisionDetection"
+    startproject "CollisionDetection"
     architecture "x64"
-    startproject "OpenGL-Examples"
+    startproject "CollisionDetection"
 
     configurations
     {
@@ -33,4 +33,4 @@ group "Dependencies"
 group ""
 
 include "OpenGL-Core"
-include "OpenGL-Examples"
+include "CollisionDetection"
