@@ -50,7 +50,18 @@ QuadTree::~QuadTree()
 	for(int i = 0; i < 4; i++)
 	{	
 		if(childNodes[i] != nullptr)
+		{
 			delete childNodes[i];
+			childNodes[i] = nullptr;
+		}
+	}
+}
+
+void QuadTree::GenerateQuadTree(std::vector<Point>& points, int numberOfPoints)
+{
+	for(int i = 0; i < numberOfPoints; i++)
+	{
+		AddPoint(points[i]);
 	}
 }
 
@@ -183,5 +194,46 @@ void QuadTree::DeleteChildNodes()
 			delete childNodes[i];
 			childNodes[i] = nullptr;
 		}
+	}
+}
+
+void QuadTree::CollisionDetection(float pointSize)
+{
+	if(childNodes[0] == nullptr)
+	{
+		if(points.size() < 1)
+			return;
+		// detect colision inside quad
+		for(int i = 0; i < points.size() - 1; i++)
+		{
+			for(int j = i + 1; j < points.size(); j++)
+			{
+				float x, y;
+				x = abs(points[i]->Position[0] - points[j]->Position[0]);
+				y = abs(points[i]->Position[1] - points[j]->Position[1]);
+
+				if(x < pointSize * 2 && y < pointSize * 2)
+				{
+					if(x > y)
+					{
+						points[i]->Direction[0] = -points[i]->Direction[0];
+						points[j]->Direction[0] = -points[j]->Direction[0];
+					}
+					else
+					{
+						points[i]->Direction[1] = -points[i]->Direction[1];
+						points[j]->Direction[1] = -points[j]->Direction[1];
+					}
+				}
+
+			}
+		}
+	}
+	else
+	{
+		childNodes[0]->CollisionDetection(pointSize);
+		childNodes[1]->CollisionDetection(pointSize);
+		childNodes[2]->CollisionDetection(pointSize);
+		childNodes[3]->CollisionDetection(pointSize);
 	}
 }

@@ -36,9 +36,9 @@ void ExampleLayer::OnAttach()
 	);
 	
 	PointRenderingSetup();
-	GenerateQuadTree();
-
 	QuadTreeRenderingSetup(); // TODO fix number of indices
+
+	quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
 }
 
 void ExampleLayer::OnDetach()
@@ -70,20 +70,26 @@ void ExampleLayer::OnUpdate(Timestep ts)
 
 	location = glGetUniformLocation(m_Shader->GetRendererID(), "u_Color");
 
-
-	// QuadTree generation
-	MovePoints();
-	quadTree.Redristribute();
-	quadTree.DeleteChildNodes();
-
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glClearColor(1.f, 1.f, 1.f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
+	MovePoints();
 	DrawPoints();
-	DrawQuadTree();
+
+	switch(collisionSystem)
+	{
+	case 0:
+		BruteForceCollisionDetection();
+		break;
+	case 1:
+		QuadTreeCollisionDetection();
+		break;
+	default:
+		break;
+	}
+
 }
 
 void ExampleLayer::OnImGuiRender()
@@ -93,6 +99,7 @@ void ExampleLayer::OnImGuiRender()
 	ImGui::SliderFloat("Point size", &m_PointSize, .001f, .02f);
 	ImGui::SliderFloat("Speed", &m_Speed, 0.0001f, m_PointSize);
 	ImGui::SliderInt("Number of points", &m_NumberOfPoints, 10, m_MaxPoints);
+	ImGui::SliderInt("BF - 0, QT - 1", &collisionSystem, 0, 1);
 	ImGui::End();
 }
 
@@ -105,8 +112,8 @@ void ExampleLayer::GeneratePoints()
 	for (int i = 0; i < m_MaxPoints; i++)
 	{
 		m_Points.emplace_back(
-		((double)rand() / (RAND_MAX)) * 3 - 1.5,
-			((double)rand() / (RAND_MAX)) * 2 - 1,
+		((double)rand() / (RAND_MAX)) * 1.5,
+			((double)rand() / (RAND_MAX)) * 1,
 			rand() % 360
 			);
 	}
@@ -174,7 +181,7 @@ void ExampleLayer::QuadTreeRenderingSetup()
 	std::vector<uint32_t> treeIndices;
 	//GenerateIndices(treeIndices);
 
-	treeIndices.reserve(m_MaxPoints * 4);
+	treeIndices.reserve(m_MaxPoints);
 	for(int i = 0; i < m_MaxPoints; i++)
 	{
 		treeIndices.emplace_back(i);
@@ -222,15 +229,6 @@ void ExampleLayer::DrawQuadTree()
 
 	glDrawElements(GL_LINES, numberOfVertices, GL_UNSIGNED_INT, nullptr);
 
-}
-
-
-void ExampleLayer::GenerateQuadTree()
-{
-	for(int i = 0; i < m_NumberOfPoints; i++)
-	{
-		quadTree.AddPoint(m_Points[i]);
-	}
 }
 
 void ExampleLayer::MovePoints()
@@ -296,7 +294,20 @@ void ExampleLayer::BruteForceCollisionDetection()
 
 void ExampleLayer::QuadTreeCollisionDetection()
 {
+	if(m_PreviousNumberOfPoints != m_NumberOfPoints)
+	{
+		quadTree.~QuadTree();
+		quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
+		m_PreviousNumberOfPoints = m_NumberOfPoints;
+	}
+	else
+	{
+		quadTree.Redristribute();
+		quadTree.DeleteChildNodes();
+		quadTree.CollisionDetection(m_PointSize);
+	}
 
+	DrawQuadTree();
 }
 
 void ExampleLayer::SpatialHashingCollisionDetection()

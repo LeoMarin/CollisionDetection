@@ -11,6 +11,8 @@ public:
 
 	~QuadTree();
 
+	void GenerateQuadTree(std::vector<Point>& points, int numberOfPoints);
+
 	void CreateChildNodes();
 	void AddPoint(Point& point);
 	bool PointIsInsideQuad(const Point& point);
@@ -18,6 +20,8 @@ public:
 
 	void Redristribute();
 	void DeleteChildNodes();
+
+	void CollisionDetection(float pointSize);
 
 	static const int maxPoints = 4;
 
