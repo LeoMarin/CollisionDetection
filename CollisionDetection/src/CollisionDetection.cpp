@@ -36,7 +36,7 @@ void CollisionDetection::OnAttach()
 	);
 	
 	PointRenderingSetup();
-	QuadTreeRenderingSetup(); // TODO fix number of indices
+	AccelerationRenderingSetup(); // TODO fix number of indices
 
 	quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
 }
@@ -48,9 +48,9 @@ void CollisionDetection::OnDetach()
 	glDeleteBuffers(1, &m_QuadIB);
 
 
-	glDeleteVertexArrays(1, &m_TreeVA);
-	glDeleteBuffers(1, &m_TreeVB);
-	glDeleteBuffers(1, &m_TreeIB);
+	glDeleteVertexArrays(1, &m_AccelerationVA);
+	glDeleteBuffers(1, &m_AccelerationVB);
+	glDeleteBuffers(1, &m_AccelerationIB);
 }
 
 void CollisionDetection::OnEvent(Event& event)
@@ -86,6 +86,9 @@ void CollisionDetection::OnUpdate(Timestep ts)
 	case 1:
 		QuadTreeCollisionDetection();
 		break;
+	case 2:
+		SpatialHashingCollisionDetection();
+		break;
 	default:
 		break;
 	}
@@ -99,7 +102,7 @@ void CollisionDetection::OnImGuiRender()
 	ImGui::SliderFloat("Point size", &m_PointSize, .001f, .02f);
 	ImGui::SliderFloat("Speed", &m_Speed, 0.0001f, m_PointSize);
 	ImGui::SliderInt("Number of points", &m_NumberOfPoints, 10, m_MaxPoints);
-	ImGui::SliderInt("BF - 0, QT - 1", &collisionSystem, 0, 1);
+	ImGui::SliderInt("BF - 0, QT - 1", &collisionSystem, 0, 2);
 	ImGui::End();
 }
 
@@ -112,8 +115,8 @@ void CollisionDetection::GeneratePoints()
 	for (int i = 0; i < m_MaxPoints; i++)
 	{
 		m_Points.emplace_back(
-		((double)rand() / (RAND_MAX)) * 1.5,
-			((double)rand() / (RAND_MAX)) * 1,
+		((double)rand() / (RAND_MAX)) * 2 - 0.5f,
+			((double)rand() / (RAND_MAX)) * 1.5 -0.5f,
 			rand() % 360
 			);
 	}
@@ -166,20 +169,19 @@ void CollisionDetection::PointRenderingSetup()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), &indices[0], GL_STATIC_DRAW);
 }
 
-void CollisionDetection::QuadTreeRenderingSetup()
+void CollisionDetection::AccelerationRenderingSetup()
 {
-	glCreateVertexArrays(1, &m_TreeVA);
-	glBindVertexArray(m_TreeVA);
+	glCreateVertexArrays(1, &m_AccelerationVA);
+	glBindVertexArray(m_AccelerationVA);
 
-	glCreateBuffers(1, &m_TreeVB);
-	glBindBuffer(GL_ARRAY_BUFFER, m_TreeVB);
+	glCreateBuffers(1, &m_AccelerationVB);
+	glBindBuffer(GL_ARRAY_BUFFER, m_AccelerationVB);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_MaxPoints, nullptr, GL_DYNAMIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
 
 	std::vector<uint32_t> treeIndices;
-	//GenerateIndices(treeIndices);
 
 	treeIndices.reserve(m_MaxPoints);
 	for(int i = 0; i < m_MaxPoints; i++)
@@ -187,8 +189,8 @@ void CollisionDetection::QuadTreeRenderingSetup()
 		treeIndices.emplace_back(i);
 	}
 
-	glCreateBuffers(1, &m_TreeIB);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_TreeIB);
+	glCreateBuffers(1, &m_AccelerationIB);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_AccelerationIB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, treeIndices.size() * sizeof(float), &treeIndices[0], GL_STATIC_DRAW);
 }
 
@@ -221,46 +223,46 @@ void CollisionDetection::DrawQuadTree()
 	quadTree.CreateQuadTreeVertices(treeVertices);
 	
 	int numberOfVertices = treeVertices.size();
-	glBindBuffer(GL_ARRAY_BUFFER, m_TreeVB);
+	glBindBuffer(GL_ARRAY_BUFFER, m_AccelerationVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, treeVertices.size() * sizeof(Vertex), &treeVertices[0]);
 
-	glBindVertexArray(m_TreeVA);
+	glBindVertexArray(m_AccelerationVA);
 	glLineWidth(1.f);
 
 	glDrawElements(GL_LINES, numberOfVertices, GL_UNSIGNED_INT, nullptr);
 
 }
 
+void CollisionDetection::DrawSpatialHash(SpatialHash& spatialHash)
+{
+	std::vector<Vertex> spatialHashVertices;
+
+	spatialHashVertices.emplace_back(-1.5f, 1.f, 0.f);
+	spatialHashVertices.emplace_back(-1.5f, -1.f, 0.f);
+	spatialHashVertices.emplace_back(-1.5f, .999f, 0.f);
+	spatialHashVertices.emplace_back(1.5f, .999f, 0.f);
+	spatialHashVertices.emplace_back(-1.5f, -1.f, 0.f);
+	spatialHashVertices.emplace_back(1.5f, -1.f, 0.f);
+	spatialHashVertices.emplace_back(1.5f, -1.f, 0.f);
+	spatialHashVertices.emplace_back(1.5f, 1.f, 0.f);
+
+	spatialHash.GenerateSpatialHashVertices(spatialHashVertices);
+
+	int numberOfVertices = spatialHashVertices.size();
+	glBindBuffer(GL_ARRAY_BUFFER, m_AccelerationVB);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, spatialHashVertices.size() * sizeof(Vertex), &spatialHashVertices[0]);
+
+	glBindVertexArray(m_AccelerationVA);
+	glLineWidth(1.f);
+
+	glDrawElements(GL_LINES, numberOfVertices, GL_UNSIGNED_INT, nullptr);
+}
+
 void CollisionDetection::MovePoints()
 {
 	for (int i = 0; i < m_NumberOfPoints; i++)
 	{
-		m_Points[i].Position[0] += m_Points[i].Direction[0] * m_Speed;
-		m_Points[i].Position[1] += m_Points[i].Direction[1] * m_Speed;
-
-		// Detect boundary collision
-		if(m_Points[i].Position[0] > m_BoundaryX)
-		{
-			m_Points[i].Direction[0] = -m_Points[i].Direction[0];
-			m_Points[i].Position[0] = m_BoundaryX;
-		}
-		else if(m_Points[i].Position[0] < -m_BoundaryX)
-		{
-			m_Points[i].Direction[0] = -m_Points[i].Direction[0];
-			m_Points[i].Position[0] = -m_BoundaryX;
-		}
-
-		if(m_Points[i].Position[1] > m_BoundaryY)
-		{
-			m_Points[i].Direction[1] = -m_Points[i].Direction[1];
-			m_Points[i].Position[1] = m_BoundaryY;
-		}
-		else if(m_Points[i].Position[1] < -m_BoundaryY)
-		{
-			m_Points[i].Direction[1] = -m_Points[i].Direction[1];
-			m_Points[i].Position[1] = -m_BoundaryY;
-
-		}
+		m_Points[i].Move(m_Speed, m_BoundaryX, m_BoundaryY);
 	}
 }
 
@@ -270,24 +272,7 @@ void CollisionDetection::BruteForceCollisionDetection()
 	{
 		for (int j = i+1; j < m_NumberOfPoints; j++)
 		{
-			float x, y;
-			x = abs(m_Points[i].Position[0] - m_Points[j].Position[0]);
-			y = abs(m_Points[i].Position[1] - m_Points[j].Position[1]);
-
-			if (x < m_PointSize * 2 && y < m_PointSize * 2)
-			{
-				if (x > y)
-				{
-					m_Points[i].Direction[0] = -m_Points[i].Direction[0];
-					m_Points[j].Direction[0] = -m_Points[j].Direction[0];
-				}
-				else
-				{
-					m_Points[i].Direction[1] = -m_Points[i].Direction[1];
-					m_Points[j].Direction[1] = -m_Points[j].Direction[1];
-				}
-			}
-
+			m_Points[i].CollisionDetection(m_Points[j], m_PointSize);
 		}
 	}
 }
@@ -304,13 +289,16 @@ void CollisionDetection::QuadTreeCollisionDetection()
 	{
 		quadTree.Redristribute();
 		quadTree.DeleteChildNodes();
-		quadTree.CollisionDetection(m_PointSize);
 	}
 
+	quadTree.CollisionDetection(m_PointSize);
 	DrawQuadTree();
 }
 
 void CollisionDetection::SpatialHashingCollisionDetection()
 {
-
+	SpatialHash spatialHash{ m_BoundaryX, m_BoundaryY, 50, 50 };
+	spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
+	spatialHash.CollisionDetection(m_PointSize);
+	DrawSpatialHash(spatialHash);
 }

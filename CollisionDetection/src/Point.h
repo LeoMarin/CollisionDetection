@@ -7,13 +7,10 @@ struct Point
 	float Position[2];
 	float Direction[2];
 
-	Point(float posX, float posY, float dir)
-	{
-		Position[0] = posX;
-		Position[1] = posY;
-		Direction[0] = cos(dir);
-		Direction[1] = sin(dir);
-	}
+	Point(float posX, float posY, float dir);
+
+	void CollisionDetection(Point& other, float pointSize);
+	void Move(float speed, float boundaryX, float boundaryY);
 };
 
 struct Vertex

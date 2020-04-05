@@ -2,6 +2,7 @@
 
 #include "Point.h"
 #include "QuadTree.h"
+#include "SpatialHash.h"
 
 #include <GLCore.h>
 #include <GLCoreUtils.h>
@@ -20,9 +21,11 @@ public:
 	virtual void OnImGuiRender() override;
 
 	void PointRenderingSetup();
-	void QuadTreeRenderingSetup();
+	void AccelerationRenderingSetup();
+
 	void DrawPoints();
 	void DrawQuadTree();
+	void DrawSpatialHash(SpatialHash& spatialHash);
 
 	void MovePoints();
 	void GeneratePoints();
@@ -37,7 +40,7 @@ private:
 	GLCore::Utils::Shader* m_Shader;
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 	
-	GLuint m_QuadVA, m_QuadVB, m_QuadIB, m_TreeVA, m_TreeVB, m_TreeIB;
+	GLuint m_QuadVA, m_QuadVB, m_QuadIB, m_AccelerationVA, m_AccelerationVB, m_AccelerationIB;
 
 	glm::vec4 m_SquareColor = { 1.f, 1.f, 1.f, 1.0f };
 

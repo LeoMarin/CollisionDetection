@@ -10,30 +10,30 @@ QuadTree::QuadTree()
 	yMin = -1.f;
 }
 
-QuadTree::QuadTree(QuadTree& parent, int childNumber)
+QuadTree::QuadTree(QuadTree& parent, ChildPosition childPosition)
 {
 	parentNode = &parent;
-	switch(childNumber)
+	switch(childPosition)
 	{
-	case 0:
+	case ChildPosition::UpRight:
 		xMax = parent.xMax;
 		yMax = parent.yMax;
 		xMin = (parent.xMax + parent.xMin) / 2;
 		yMin = (parent.yMax + parent.yMin) / 2;
 		break;
-	case 1:
+	case ChildPosition::UpLeft:
 		xMax = (parent.xMax + parent.xMin) / 2;
 		yMax = parent.yMax;
 		xMin = parent.xMin;
 		yMin = (parent.yMax + parent.yMin) / 2;
 		break;
-	case 2:
+	case ChildPosition::DownLeft:
 		xMax = (parent.xMax + parent.xMin) / 2;
 		yMax = (parent.yMax + parent.yMin) / 2;
 		xMin = parent.xMin;
 		yMin = parent.yMin;
 		break;
-	case 3:
+	case ChildPosition::DownRight:
 		xMax = parent.xMax;
 		yMax = (parent.yMax + parent.yMin) / 2;
 		xMin = (parent.xMax + parent.xMin) / 2;
@@ -67,10 +67,10 @@ void QuadTree::GenerateQuadTree(std::vector<Point>& points, int numberOfPoints)
 
 void QuadTree::CreateChildNodes()
 {
-	for(int i = 0; i < 4; i++)
-	{
-		childNodes[i] = new QuadTree(*this, i);
-	}
+	childNodes[0] = new QuadTree(*this, ChildPosition::UpRight);
+	childNodes[1] = new QuadTree(*this, ChildPosition::UpLeft);
+	childNodes[2] = new QuadTree(*this, ChildPosition::DownLeft);
+	childNodes[3] = new QuadTree(*this, ChildPosition::DownRight);
 
 	for(Point* p : points)
 		AddPoint(*p);
@@ -130,6 +130,7 @@ void QuadTree::CreateQuadTreeVertices(std::vector<Vertex>& vertices)
 		vertices.emplace_back(xMax, childNodes[0]->yMin, 0.f);
 		vertices.emplace_back(childNodes[0]->xMin, yMin, 0.f);
 		vertices.emplace_back(childNodes[0]->xMin, yMax, 0.f);
+
 		for(QuadTree* child : childNodes)
 		{
 			child->CreateQuadTreeVertices(vertices);
@@ -201,31 +202,12 @@ void QuadTree::CollisionDetection(float pointSize)
 {
 	if(childNodes[0] == nullptr)
 	{
-		if(points.size() < 1)
-			return;
 		// detect colision inside quad
-		for(int i = 0; i < points.size() - 1; i++)
+		for(int i = 0; i < points.size(); i++)
 		{
 			for(int j = i + 1; j < points.size(); j++)
 			{
-				float x, y;
-				x = abs(points[i]->Position[0] - points[j]->Position[0]);
-				y = abs(points[i]->Position[1] - points[j]->Position[1]);
-
-				if(x < pointSize * 2 && y < pointSize * 2)
-				{
-					if(x > y)
-					{
-						points[i]->Direction[0] = -points[i]->Direction[0];
-						points[j]->Direction[0] = -points[j]->Direction[0];
-					}
-					else
-					{
-						points[i]->Direction[1] = -points[i]->Direction[1];
-						points[j]->Direction[1] = -points[j]->Direction[1];
-					}
-				}
-
+				points[i]->CollisionDetection(*points[j], pointSize);
 			}
 		}
 	}

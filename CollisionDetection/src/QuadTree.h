@@ -6,8 +6,14 @@
 class QuadTree
 {
 public:
+
+	enum class ChildPosition
+	{
+		UpRight = 0, UpLeft, DownLeft, DownRight, Root
+	};
+
 	QuadTree(); // creating parent node
-	QuadTree(QuadTree& parent, int childNumber); // creating child node
+	QuadTree(QuadTree& parent, ChildPosition childPosition); // creating child node
 
 	~QuadTree();
 
