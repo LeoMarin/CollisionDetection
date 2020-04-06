@@ -36,7 +36,7 @@ void CollisionDetection::OnAttach()
 	);
 	
 	PointRenderingSetup();
-	AccelerationRenderingSetup();
+	GridRenderingSetup();
 }
 
 void CollisionDetection::OnDetach()
@@ -91,15 +91,17 @@ void CollisionDetection::OnUpdate(Timestep ts)
 		break;
 	}
 
+	DrawGrid(collisionSystem);
 }
 
 void CollisionDetection::OnImGuiRender()
 {
 	ImGui::Begin("Controls");
 	// TODO remove hardcoded
-	ImGui::SliderFloat("Speed", &m_Speed, 0.0001f, m_PointSize);
+	ImGui::SliderFloat("Speed", &m_Speed, 0.0001f, 0.1f);
 	ImGui::SliderInt("Number of points", &m_NumberOfPoints, 10, m_MaxPoints);
-	ImGui::SliderInt("BF - 0, QT - 1", &collisionSystem, 0, 2);
+	ImGui::Text("0 - Brute force, 1 - QuadTree, 2 - SpatialHashing");
+	ImGui::SliderInt("Collision system", &collisionSystem, 0, 2);
 	ImGui::End();
 }
 
@@ -168,7 +170,7 @@ void CollisionDetection::PointRenderingSetup()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), &indices[0], GL_STATIC_DRAW);
 }
 
-void CollisionDetection::AccelerationRenderingSetup()
+void CollisionDetection::GridRenderingSetup()
 {
 	glCreateVertexArrays(1, &m_AccelerationVA);
 	glBindVertexArray(m_AccelerationVA);
@@ -205,7 +207,7 @@ void CollisionDetection::DrawPoints()
 	glDrawElements(GL_TRIANGLES, m_NumberOfPoints * 6, GL_UNSIGNED_INT, nullptr);
 }
 
-void CollisionDetection::DrawQuadTree()
+void CollisionDetection::DrawGrid(int collisionSystem)
 {
 	std::vector<Vertex> treeVertices;
 
@@ -216,43 +218,20 @@ void CollisionDetection::DrawQuadTree()
 	treeVertices.emplace_back(1.5f, .999f, 0.f);
 	treeVertices.emplace_back(-1.5f, -1.f, 0.f);
 	treeVertices.emplace_back(1.5f, -1.f, 0.f);
-	treeVertices.emplace_back( 1.5f, -1.f, 0.f);
-	treeVertices.emplace_back( 1.5f,  1.f, 0.f);
-
-	quadTree.CreateQuadTreeVertices(treeVertices);
+	treeVertices.emplace_back(1.5f, -1.f, 0.f);
+	treeVertices.emplace_back(1.5f, 1.f, 0.f);
 	
+	if(collisionSystem == 1)
+		quadTree.CreateQuadTreeVertices(treeVertices);
+	else if(collisionSystem == 2)
+		spatialHash.GenerateSpatialHashVertices(treeVertices);
+
 	int numberOfVertices = treeVertices.size();
 	glBindBuffer(GL_ARRAY_BUFFER, m_AccelerationVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, treeVertices.size() * sizeof(Vertex), &treeVertices[0]);
 
 	glBindVertexArray(m_AccelerationVA);
 	glLineWidth(1.f);
-	glDrawElements(GL_LINES, numberOfVertices, GL_UNSIGNED_INT, nullptr);
-
-}
-
-void CollisionDetection::DrawSpatialHash(SpatialHash& spatialHash)
-{
-	std::vector<Vertex> spatialHashVertices;
-
-	spatialHashVertices.emplace_back(-1.5f, 1.f, 0.f);
-	spatialHashVertices.emplace_back(-1.5f, -1.f, 0.f);
-	spatialHashVertices.emplace_back(-1.5f, .999f, 0.f);
-	spatialHashVertices.emplace_back(1.5f, .999f, 0.f);
-	spatialHashVertices.emplace_back(-1.5f, -1.f, 0.f);
-	spatialHashVertices.emplace_back(1.5f, -1.f, 0.f);
-	spatialHashVertices.emplace_back(1.5f, -1.f, 0.f);
-	spatialHashVertices.emplace_back(1.5f, 1.f, 0.f);
-
-	spatialHash.GenerateSpatialHashVertices(spatialHashVertices);
-
-	int numberOfVertices = spatialHashVertices.size();
-	glBindBuffer(GL_ARRAY_BUFFER, m_AccelerationVB);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, spatialHashVertices.size() * sizeof(Vertex), &spatialHashVertices[0]);
-
-	glBindVertexArray(m_AccelerationVA);
-	glLineWidth(1.f);
-
 	glDrawElements(GL_LINES, numberOfVertices, GL_UNSIGNED_INT, nullptr);
 }
 
@@ -290,7 +269,6 @@ void CollisionDetection::QuadTreeCollisionDetection()
 	}
 
 	quadTree.CollisionDetection();
-	DrawQuadTree();
 }
 
 void CollisionDetection::SpatialHashingCollisionDetection()
@@ -306,5 +284,4 @@ void CollisionDetection::SpatialHashingCollisionDetection()
 		spatialHash.Redistribute();
 	}
 	spatialHash.CollisionDetection();
-	DrawSpatialHash(spatialHash);
 }

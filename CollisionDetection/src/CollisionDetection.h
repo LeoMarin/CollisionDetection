@@ -11,6 +11,11 @@ class CollisionDetection : public GLCore::Layer
 {
 public:
 
+	enum class CollisionSystem
+	{
+		BruteForce = 0, QuadTree, SpatialHashing
+	};
+
 	CollisionDetection();
 	virtual ~CollisionDetection();
 
@@ -21,11 +26,10 @@ public:
 	virtual void OnImGuiRender() override;
 
 	void PointRenderingSetup();
-	void AccelerationRenderingSetup();
+	void GridRenderingSetup();
 
 	void DrawPoints();
-	void DrawQuadTree();
-	void DrawSpatialHash(SpatialHash& spatialHash);
+	void DrawGrid(int collisionSystem);
 
 	void MovePoints();
 	void GeneratePoints();
