@@ -39,13 +39,15 @@ void SpatialHash::Redistribute()
 {
 	for(int i = 0; i < m_HashedPoints.size(); i++)
 	{
-		for(int j = 0; j < m_HashedPoints[i].size(); j++)
+		int numberOfPoints = m_HashedPoints[i].size();
+		for(int j = 0; j < numberOfPoints; j++)
 		{
 			if(i != GetCellIndex(*m_HashedPoints[i][j]))
 			{
 				AddPoint(m_HashedPoints[i][j]);
-				m_HashedPoints[i].erase(m_HashedPoints[i].begin() + j);
-				j--;
+				m_HashedPoints[i][j] = m_HashedPoints[i][numberOfPoints - 1];
+				m_HashedPoints[i].pop_back();
+				numberOfPoints--;
 			}
 		}
 	}
@@ -115,5 +117,14 @@ void SpatialHash::GenerateSpatialHashVertices(std::vector<Vertex>& vertices)
 	{
 		vertices.emplace_back(m_BoundaryX, i*verticalDistance-m_BoundaryY, 0.f);
 		vertices.emplace_back(-m_BoundaryX, i*verticalDistance-m_BoundaryY, 0.f);
+	}
+}
+
+void SpatialHash::ClearPoints()
+{
+	for(std::vector<Point*> cell : m_HashedPoints)
+	{
+		cell.clear();
+		cell.shrink_to_fit();
 	}
 }

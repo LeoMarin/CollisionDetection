@@ -56,6 +56,7 @@ private:
 	int collisionSystem = 1;
 
 	QuadTree quadTree{};
+	SpatialHash spatialHash{ m_BoundaryX, m_BoundaryY, 100, 100 };
 	std::vector<Point> m_Points;
 
 };

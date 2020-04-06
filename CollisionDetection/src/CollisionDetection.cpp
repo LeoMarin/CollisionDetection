@@ -39,6 +39,7 @@ void CollisionDetection::OnAttach()
 	AccelerationRenderingSetup(); // TODO fix number of indices
 
 	quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
+	spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
 }
 
 void CollisionDetection::OnDetach()
@@ -287,7 +288,7 @@ void CollisionDetection::QuadTreeCollisionDetection()
 	}
 	else
 	{
-		quadTree.Redristribute();
+		quadTree.Redistribute();
 		quadTree.DeleteChildNodes();
 	}
 
@@ -297,8 +298,16 @@ void CollisionDetection::QuadTreeCollisionDetection()
 
 void CollisionDetection::SpatialHashingCollisionDetection()
 {
-	SpatialHash spatialHash{ m_BoundaryX, m_BoundaryY, 100, 100 };
-	spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
+	if(m_PreviousNumberOfPoints != m_NumberOfPoints)
+	{
+		spatialHash.ClearPoints();
+		spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
+		m_PreviousNumberOfPoints = m_NumberOfPoints;
+	}
+	else
+	{
+		spatialHash.Redistribute();
+	}
 	spatialHash.CollisionDetection();
 	DrawSpatialHash(spatialHash);
 }

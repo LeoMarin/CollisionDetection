@@ -138,13 +138,13 @@ void QuadTree::CreateQuadTreeVertices(std::vector<Vertex>& vertices)
 	}
 }
 
-void QuadTree::Redristribute()
+void QuadTree::Redistribute()
 {
 	if(childNodes[0] != nullptr)
 	{
 		for(QuadTree* child : childNodes)
 		{
-			child->Redristribute();
+			child->Redistribute();
 		}
 	}
 	else

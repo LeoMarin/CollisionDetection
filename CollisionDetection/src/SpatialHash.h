@@ -24,6 +24,8 @@ public:
 
 	void GenerateSpatialHashVertices(std::vector<Vertex>& vertices);
 
+	void ClearPoints();
+
 private:
 	float m_BoundaryX, m_BoundaryY;
 	int m_NumberOfCellsPerColumn, m_NumberofCellsPerRow;

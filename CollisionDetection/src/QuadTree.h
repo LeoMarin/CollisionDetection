@@ -24,7 +24,7 @@ public:
 	bool PointIsInsideQuad(const Point& point);
 	void CreateQuadTreeVertices(std::vector<Vertex>& vertices);
 
-	void Redristribute();
+	void Redistribute();
 	void DeleteChildNodes();
 
 	void CollisionDetection();
