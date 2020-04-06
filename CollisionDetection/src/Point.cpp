@@ -38,27 +38,7 @@ void Point::CollisionDetection(Point& other)
 		this->speed.y -= p * other.size * normal.y;
 		other.speed.x += p * this->size * normal.x;
 		other.speed.y += p * this->size * normal.y;
-
-		//float normal[2]{ (other.position.x - this->position.x) / distance, (other.position.y - this->position.y) / distance };
-		//float tangent[2]{ -normal[1], normal[0] };
-
-		//float dotProductTangent[2]{ this->speed.x * tangent[0] + this->speed.y * tangent[1],
-		//	other.speed.x * tangent[0] + other.speed.y * tangent[1] };
-
-		//float dotProductNormal[2]{ this->speed.x * normal[0] + this->speed.y * normal[1],
-		//	other.speed.x * normal[0] + other.speed.y * normal[1] };
-	
-		//// conservation of momentum
-		//float momentum[2]{ (dotProductNormal[0] * (this->size - other.size) + 2.f * other.size * dotProductNormal[1]) / (this->size + other.size),
-		//	(dotProductNormal[1] * (other.size - this->size) + 2.f * this->size * dotProductNormal[0]) / (this->size + other.size) };
-
-		//// speed = tangental response + normal response
-		//this->speed.x = tangent[0] * dotProductTangent[0] + normal[0] * momentum[0];
-		//this->speed.y = tangent[1] * dotProductTangent[0] + normal[1] * momentum[0];
-		//other.speed.x = tangent[0] * dotProductTangent[1] + normal[0] * momentum[1];
-		//other.speed.y = tangent[1] * dotProductTangent[1] + normal[1] * momentum[1];
 	}
-
 }
 
 void Point::Move(float speed, float boundaryX, float boundaryY)
