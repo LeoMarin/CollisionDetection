@@ -62,9 +62,10 @@ void SpatialHash::CollisionDetection()
 {
 	for(int i = 0; i < m_HashedPoints.size(); i++)
 	{
-		for(int j = 0; j < m_HashedPoints[i].size(); j++)
+		int numberOfPoints = m_HashedPoints[i].size();
+		for(int j = 0; j < numberOfPoints; j++)
 		{
-			for(int x = j + 1; x < m_HashedPoints[i].size(); x++)
+			for(int x = j + 1; x < numberOfPoints; x++)
 			{
 				m_HashedPoints[i][j]->CollisionDetection(*m_HashedPoints[i][x]);
 			}

@@ -11,7 +11,9 @@ using namespace GLCore::Utils;
 CollisionDetection::CollisionDetection()
 	: m_CameraController(16.0f / 9.0f)
 {
-
+	GeneratePoints();
+	quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
+	spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
 }
 
 CollisionDetection::~CollisionDetection()
@@ -24,8 +26,6 @@ void CollisionDetection::OnAttach()
 	EnableGLDebugging();
 	srand(time(NULL));
 
-	GeneratePoints();
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -36,10 +36,7 @@ void CollisionDetection::OnAttach()
 	);
 	
 	PointRenderingSetup();
-	AccelerationRenderingSetup(); // TODO fix number of indices
-
-	quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
-	spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
+	AccelerationRenderingSetup();
 }
 
 void CollisionDetection::OnDetach()

@@ -11,6 +11,8 @@ Point::Point(float posX, float posY, float speedX, float speedY, float size)
 
 void Point::CollisionDetection(Point& other)
 {
+	if(this == &other)
+		return;
 	float x, y;
 	x = other.position.x - this->position.x;
 	y = other.position.y - this->position.y;

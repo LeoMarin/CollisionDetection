@@ -53,10 +53,10 @@ private:
 	int m_PreviousNumberOfPoints = m_NumberOfPoints;
 	const int m_MaxPoints = 10000;
 
-	int collisionSystem = 1;
+	int collisionSystem = 2;
 
+	std::vector<Point> m_Points;
 	QuadTree quadTree{};
 	SpatialHash spatialHash{ m_BoundaryX, m_BoundaryY, 100, 100 };
-	std::vector<Point> m_Points;
 
 };
