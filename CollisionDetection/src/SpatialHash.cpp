@@ -21,8 +21,8 @@ SpatialHash::~SpatialHash()
 
 int SpatialHash::GetCellIndex(Point& point)
 {
-	int horizontalIndex = ((point.Position[0] + m_BoundaryX) / (m_BoundaryX * 2.0001f)) * m_NumberofCellsPerRow;
-	int verticalIndex = ((-point.Position[1] + m_BoundaryY) / (m_BoundaryY * 2.0001f)) * m_NumberOfCellsPerColumn;
+	int horizontalIndex = ((point.position.x + m_BoundaryX) / (m_BoundaryX * 2.0001f)) * m_NumberofCellsPerRow;
+	int verticalIndex = ((-point.position.y + m_BoundaryY) / (m_BoundaryY * 2.0001f)) * m_NumberOfCellsPerColumn;
 
 	return horizontalIndex + verticalIndex * m_NumberofCellsPerRow;
 }
@@ -56,7 +56,7 @@ void SpatialHash::AddPoint(Point* p)
 	m_HashedPoints[GetCellIndex(*p)].push_back(p);
 }
 
-void SpatialHash::CollisionDetection(float pointSize)
+void SpatialHash::CollisionDetection()
 {
 	for(int i = 0; i < m_HashedPoints.size(); i++)
 	{
@@ -64,7 +64,7 @@ void SpatialHash::CollisionDetection(float pointSize)
 		{
 			for(int x = j + 1; x < m_HashedPoints[i].size(); x++)
 			{
-				m_HashedPoints[i][j]->CollisionDetection(*m_HashedPoints[i][x], pointSize);
+				m_HashedPoints[i][j]->CollisionDetection(*m_HashedPoints[i][x]);
 			}
 
 
@@ -72,7 +72,7 @@ void SpatialHash::CollisionDetection(float pointSize)
 			{
 				// check cell to the left
 				for(Point* p : m_HashedPoints[i - 1])
-					m_HashedPoints[i][j]->CollisionDetection(*p, pointSize);
+					m_HashedPoints[i][j]->CollisionDetection(*p);
 
 			}
 
@@ -80,21 +80,21 @@ void SpatialHash::CollisionDetection(float pointSize)
 			{
 				// check cell to the right
 				for(Point* p : m_HashedPoints[i + 1])
-					m_HashedPoints[i][j]->CollisionDetection(*p, pointSize);
+					m_HashedPoints[i][j]->CollisionDetection(*p);
 			}
 
 			if(i >= m_NumberofCellsPerRow)
 			{
 				// check cell above
 				for(Point* p : m_HashedPoints[i - m_NumberofCellsPerRow])
-					m_HashedPoints[i][j]->CollisionDetection(*p, pointSize);
+					m_HashedPoints[i][j]->CollisionDetection(*p);
 			}
 
 			if(i + m_NumberofCellsPerRow < m_HashedPoints.size())
 			{
 				// check cell below
 				for(Point* p : m_HashedPoints[i + m_NumberofCellsPerRow])
-					m_HashedPoints[i][j]->CollisionDetection(*p, pointSize);
+					m_HashedPoints[i][j]->CollisionDetection(*p);
 			}
 		}
 	}

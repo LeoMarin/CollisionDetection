@@ -27,7 +27,7 @@ public:
 	void Redristribute();
 	void DeleteChildNodes();
 
-	void CollisionDetection(float pointSize);
+	void CollisionDetection();
 
 	static const int maxPoints = 4;
 

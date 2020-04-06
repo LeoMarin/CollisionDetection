@@ -109,10 +109,10 @@ void QuadTree::AddPoint(Point& point)
 
 bool QuadTree::PointIsInsideQuad(const Point& point)
 {
-	if(point.Position[0] > this->xMax ||
-		point.Position[0] < this->xMin ||
-		point.Position[1] > this->yMax ||
-		point.Position[1] < this->yMin)
+	if(point.position.x > this->xMax ||
+		point.position.x < this->xMin ||
+		point.position.y > this->yMax ||
+		point.position.y < this->yMin)
 	{
 		return false;
 	}
@@ -198,7 +198,7 @@ void QuadTree::DeleteChildNodes()
 	}
 }
 
-void QuadTree::CollisionDetection(float pointSize)
+void QuadTree::CollisionDetection()
 {
 	if(childNodes[0] == nullptr)
 	{
@@ -207,15 +207,15 @@ void QuadTree::CollisionDetection(float pointSize)
 		{
 			for(int j = i + 1; j < points.size(); j++)
 			{
-				points[i]->CollisionDetection(*points[j], pointSize);
+				points[i]->CollisionDetection(*points[j]);
 			}
 		}
 	}
 	else
 	{
-		childNodes[0]->CollisionDetection(pointSize);
-		childNodes[1]->CollisionDetection(pointSize);
-		childNodes[2]->CollisionDetection(pointSize);
-		childNodes[3]->CollisionDetection(pointSize);
+		childNodes[0]->CollisionDetection();
+		childNodes[1]->CollisionDetection();
+		childNodes[2]->CollisionDetection();
+		childNodes[3]->CollisionDetection();
 	}
 }

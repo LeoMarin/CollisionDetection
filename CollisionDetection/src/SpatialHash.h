@@ -20,7 +20,7 @@ public:
 
 	void AddPoint(Point* p);
 
-	void CollisionDetection(float pointSize);
+	void CollisionDetection();
 
 	void GenerateSpatialHashVertices(std::vector<Vertex>& vertices);
 

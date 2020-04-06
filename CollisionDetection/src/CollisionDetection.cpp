@@ -99,7 +99,6 @@ void CollisionDetection::OnImGuiRender()
 {
 	ImGui::Begin("Controls");
 	// TODO remove hardcoded
-	ImGui::SliderFloat("Point size", &m_PointSize, .001f, .02f);
 	ImGui::SliderFloat("Speed", &m_Speed, 0.0001f, m_PointSize);
 	ImGui::SliderInt("Number of points", &m_NumberOfPoints, 10, m_MaxPoints);
 	ImGui::SliderInt("BF - 0, QT - 1", &collisionSystem, 0, 2);
@@ -117,7 +116,9 @@ void CollisionDetection::GeneratePoints()
 		m_Points.emplace_back(
 		((double)rand() / (RAND_MAX)) * 2 - 0.5f,
 			((double)rand() / (RAND_MAX)) * 1.5 -0.5f,
-			rand() % 360
+			((double)rand() / (RAND_MAX)) * 0.5 - 0.25f,
+			((double)rand() / (RAND_MAX)) * 0.5 - 0.25f,
+			m_PointSize
 			);
 	}
 }
@@ -128,10 +129,10 @@ void CollisionDetection::GenerateVerices(std::vector<Vertex>& vertices)
 
 	for (int i = 0; i < m_NumberOfPoints; i++)
 	{
-		vertices.emplace_back(m_Points[i].Position[0] - m_PointSize, m_Points[i].Position[1] + m_PointSize, 0.0f);
-		vertices.emplace_back(m_Points[i].Position[0] - m_PointSize, m_Points[i].Position[1] - m_PointSize, 0.0f);
-		vertices.emplace_back(m_Points[i].Position[0] + m_PointSize, m_Points[i].Position[1] - m_PointSize, 0.0f);
-		vertices.emplace_back(m_Points[i].Position[0] + m_PointSize, m_Points[i].Position[1] + m_PointSize, 0.0f);
+		vertices.emplace_back(m_Points[i].position.x - m_PointSize, m_Points[i].position.y + m_PointSize, 0.0f);
+		vertices.emplace_back(m_Points[i].position.x - m_PointSize, m_Points[i].position.y - m_PointSize, 0.0f);
+		vertices.emplace_back(m_Points[i].position.x + m_PointSize, m_Points[i].position.y - m_PointSize, 0.0f);
+		vertices.emplace_back(m_Points[i].position.x + m_PointSize, m_Points[i].position.y + m_PointSize, 0.0f);
 	}
 }
 
@@ -228,7 +229,6 @@ void CollisionDetection::DrawQuadTree()
 
 	glBindVertexArray(m_AccelerationVA);
 	glLineWidth(1.f);
-
 	glDrawElements(GL_LINES, numberOfVertices, GL_UNSIGNED_INT, nullptr);
 
 }
@@ -272,7 +272,7 @@ void CollisionDetection::BruteForceCollisionDetection()
 	{
 		for (int j = i+1; j < m_NumberOfPoints; j++)
 		{
-			m_Points[i].CollisionDetection(m_Points[j], m_PointSize);
+			m_Points[i].CollisionDetection(m_Points[j]);
 		}
 	}
 }
@@ -291,14 +291,14 @@ void CollisionDetection::QuadTreeCollisionDetection()
 		quadTree.DeleteChildNodes();
 	}
 
-	quadTree.CollisionDetection(m_PointSize);
+	quadTree.CollisionDetection();
 	DrawQuadTree();
 }
 
 void CollisionDetection::SpatialHashingCollisionDetection()
 {
-	SpatialHash spatialHash{ m_BoundaryX, m_BoundaryY, 50, 50 };
+	SpatialHash spatialHash{ m_BoundaryX, m_BoundaryY, 100, 100 };
 	spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
-	spatialHash.CollisionDetection(m_PointSize);
+	spatialHash.CollisionDetection();
 	DrawSpatialHash(spatialHash);
 }

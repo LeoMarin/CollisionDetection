@@ -46,10 +46,10 @@ private:
 
 	const float m_BoundaryX = 1.5f;
 	const float m_BoundaryY = 1.f;
-	float m_Speed = 0.005f;
+	float m_Speed = 0.05f;
 	float m_PointSize = 0.005f;
 
-	int m_NumberOfPoints = 5000;
+	int m_NumberOfPoints = 500;
 	int m_PreviousNumberOfPoints = m_NumberOfPoints;
 	const int m_MaxPoints = 10000;
 

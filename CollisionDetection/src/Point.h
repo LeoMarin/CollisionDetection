@@ -2,14 +2,21 @@
 
 #include <cmath>
 
+struct Vector2
+{
+	float x;
+	float y;
+};
+
 struct Point
 {
-	float Position[2];
-	float Direction[2];
+	Vector2 position;
+	Vector2 speed;
+	float size;
 
-	Point(float posX, float posY, float dir);
+	Point(float posX, float posY, float speedX, float speedY, float size);
 
-	void CollisionDetection(Point& other, float pointSize);
+	void CollisionDetection(Point& other);
 	void Move(float speed, float boundaryX, float boundaryY);
 };
 
