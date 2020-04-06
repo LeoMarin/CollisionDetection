@@ -21,6 +21,7 @@ public:
 	void AddPoint(Point* p);
 
 	void CollisionDetection();
+	void CheckAdjecentCells(Point& point, int cellIndex);
 
 	void GenerateSpatialHashVertices(std::vector<Vertex>& vertices);
 

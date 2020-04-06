@@ -252,15 +252,19 @@ void CollisionDetection::BruteForceCollisionDetection()
 			m_Points[i].CollisionDetection(m_Points[j]);
 		}
 	}
+	isSpatialHash = false;
+	isQuadTree = false;
 }
 
 void CollisionDetection::QuadTreeCollisionDetection()
 {
-	if(m_PreviousNumberOfPoints != m_NumberOfPoints)
+	if(m_PreviousNumberOfPoints != m_NumberOfPoints || !isQuadTree)
 	{
 		quadTree.~QuadTree();
 		quadTree.GenerateQuadTree(m_Points, m_NumberOfPoints);
 		m_PreviousNumberOfPoints = m_NumberOfPoints;
+		isQuadTree = true;
+		isSpatialHash = false;
 	}
 	else
 	{
@@ -273,11 +277,13 @@ void CollisionDetection::QuadTreeCollisionDetection()
 
 void CollisionDetection::SpatialHashingCollisionDetection()
 {
-	if(m_PreviousNumberOfPoints != m_NumberOfPoints)
+	if(m_PreviousNumberOfPoints != m_NumberOfPoints || !isSpatialHash)
 	{
 		spatialHash.ClearPoints();
 		spatialHash.FillSpatialHashTable(m_Points, m_NumberOfPoints);
 		m_PreviousNumberOfPoints = m_NumberOfPoints;
+		isSpatialHash = true;
+		isQuadTree = false;
 	}
 	else
 	{

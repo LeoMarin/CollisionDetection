@@ -53,7 +53,7 @@ private:
 	float m_Speed = 0.05f;
 	float m_PointSize = 0.005f;
 
-	int m_NumberOfPoints = 500;
+	int m_NumberOfPoints = 10000;
 	int m_PreviousNumberOfPoints = m_NumberOfPoints;
 	const int m_MaxPoints = 10000;
 
@@ -63,4 +63,5 @@ private:
 	QuadTree quadTree{};
 	SpatialHash spatialHash{ m_BoundaryX, m_BoundaryY, 100, 100 };
 
+	bool isBruteforce = false, isQuadTree = false, isSpatialHash = true;
 };

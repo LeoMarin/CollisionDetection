@@ -11,15 +11,13 @@ Point::Point(float posX, float posY, float speedX, float speedY, float size)
 
 void Point::CollisionDetection(Point& other)
 {
-	if(this == &other)
-		return;
 	float x, y;
 	x = other.position.x - this->position.x;
 	y = other.position.y - this->position.y;
 
 	if(x * x + y * y <= (this->size + other.size) * (this->size + other.size))
 	{
-		float distance = sqrtf(x * x + y * y);
+		float distance = sqrtf(x * x + y * y) + 0.00000001f;
 		float overlap = (distance - this->size - other.size) / 2;
 		
 		Vector2 displacment{ overlap * (this->position.x - other.position.x) / distance,

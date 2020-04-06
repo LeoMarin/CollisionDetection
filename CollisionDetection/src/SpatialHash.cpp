@@ -65,41 +65,45 @@ void SpatialHash::CollisionDetection()
 		int numberOfPoints = m_HashedPoints[i].size();
 		for(int j = 0; j < numberOfPoints; j++)
 		{
+
 			for(int x = j + 1; x < numberOfPoints; x++)
 			{
 				m_HashedPoints[i][j]->CollisionDetection(*m_HashedPoints[i][x]);
 			}
-
-
-			if(i % m_NumberofCellsPerRow != 0)
-			{
-				// check cell to the left
-				for(Point* p : m_HashedPoints[i - 1])
-					m_HashedPoints[i][j]->CollisionDetection(*p);
-
-			}
-
-			if((i + 1) % m_NumberofCellsPerRow != 0)
-			{
-				// check cell to the right
-				for(Point* p : m_HashedPoints[i + 1])
-					m_HashedPoints[i][j]->CollisionDetection(*p);
-			}
-
-			if(i >= m_NumberofCellsPerRow)
-			{
-				// check cell above
-				for(Point* p : m_HashedPoints[i - m_NumberofCellsPerRow])
-					m_HashedPoints[i][j]->CollisionDetection(*p);
-			}
-
-			if(i + m_NumberofCellsPerRow < m_HashedPoints.size())
-			{
-				// check cell below
-				for(Point* p : m_HashedPoints[i + m_NumberofCellsPerRow])
-					m_HashedPoints[i][j]->CollisionDetection(*p);
-			}
+			CheckAdjecentCells(*m_HashedPoints[i][j], i);
 		}
+	}
+}
+
+void SpatialHash::CheckAdjecentCells(Point& point, int i)
+{
+	if(i % m_NumberofCellsPerRow != 0)
+	{
+		// check cell to the left
+		for(Point* p : m_HashedPoints[i - 1])
+			point.CollisionDetection(*p);
+
+	}
+
+	if((i + 1) % m_NumberofCellsPerRow != 0)
+	{
+		// check cell to the right
+		for(Point* p : m_HashedPoints[i + 1])
+			point.CollisionDetection(*p);
+	}
+
+	if(i >= m_NumberofCellsPerRow)
+	{
+		// check cell above
+		for(Point* p : m_HashedPoints[i - m_NumberofCellsPerRow])
+			point.CollisionDetection(*p);
+	}
+
+	if(i + m_NumberofCellsPerRow < m_HashedPoints.size())
+	{
+		// check cell below
+		for(Point* p : m_HashedPoints[i + m_NumberofCellsPerRow])
+			point.CollisionDetection(*p);
 	}
 }
 
@@ -123,7 +127,7 @@ void SpatialHash::GenerateSpatialHashVertices(std::vector<Vertex>& vertices)
 
 void SpatialHash::ClearPoints()
 {
-	for(std::vector<Point*> cell : m_HashedPoints)
+	for(std::vector<Point*>& cell : m_HashedPoints)
 	{
 		cell.clear();
 		cell.shrink_to_fit();
